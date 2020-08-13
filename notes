@@ -1,0 +1,54 @@
+BT MAC ADDR:
+24:7D:4D:6B:E8:CC# Code to get temperature data
+
+# Command to retrieve sysdump
+adb bugreport [path]
+
+# Location of log
+/home/kali/bugreport/FS/data/log/bt/btsnoop_hci.log
+	
+# Get name of package
+kali@kali:~/base/sources$ adb shell pm list packages | grep bbq
+package:qlnet.com.bbqgo
+
+# Use name of package to find path to APK
+kali@kali:~/base/sources$ adb shell pm path qlnet.com.bbqgo
+package:/data/app/qlnet.com.bbqgo-DJ1Nbn_qDc_fI0FhkXOtWw==/base.apk
+
+# Pull APK
+adb pull /data/app/qlnet.com.bbqgo-DJ1Nbn_qEc_fI0FhkXOtWw==/base.apk
+
+# Decompile APK
+jadx base.apk
+
+# Link to JADX
+https://github.com/skylot/jadx
+
+# List files in source directory
+ls -R base/sources
+
+# Relevant directories
+./com/example/bbqtemperature/service:
+BbqThermometer.java  MyBbqBleService.java  PlayBellService.java  TimerService.java
+ 
+# Call in MyBbqBleService.java to get temperature data
+short round = (short) ((int) Math.round(((double) MyBbqBleService.a(value3, i2)) / 	10.0d));
+
+# Function to normalize 16-bit temperature value from BT packet
+public static short a(byte[] bArr, int i2) {
+    if (bArr.length <= i2) {
+        return 0;
+    }
+    return (short) ( (bArr[i2 + 1] << 8) | (bArr[i2 + 0] & 255) );
+}
+
+# PyBluez Dependencies
+pkg-config
+libboost-python-dev
+libboost-thread-dev
+libbluetooth-dev >= 4.101
+libglib2.0-dev
+python-dev
+
+# Installing Bluez from source
+http://www.bt-test.systems/wp-content/uploads/2019/03/T1804_How-to-set-up-BlueZ_LFC_FINAL-2.pdf
