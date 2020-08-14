@@ -43,12 +43,9 @@ public static short a(byte[] bArr, int i2) {
 }
 
 # PyBluez Dependencies
-pkg-config
 libboost-python-dev
 libboost-thread-dev
 libbluetooth-dev >= 4.101
 libglib2.0-dev
 python-dev
 
-# Installing Bluez from source
-http://www.bt-test.systems/wp-content/uploads/2019/03/T1804_How-to-set-up-BlueZ_LFC_FINAL-2.pdf
