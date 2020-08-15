@@ -5,15 +5,13 @@ import Adafruit_BluefruitLE
 temps = [14, 1]
 magic = 0
 
-print((temps[magic + 1] << 8) | (temps[magic + 0] & 255)) 
+print((temps[magic + 1] << 8) | (temps[magic + 0] & 255))
 '''
 '''
 def ble_beacon_scan():
-   
     request = GATTRequester(dest_addr)
     value = request.read_by_handle(0x30)[0]
     print("Got {}".format(value))
-   
     print("Scanning for beacon")
     service = BeaconService()
     devices = service.scan(5)
@@ -25,7 +23,7 @@ def ble_scan(timeout=10):
     print("Discovering nearby devices")
     service = DiscoveryService("hci0")
     devices = service.discover(timeout)
-    for addr, name in devices.items():        
+    for addr, name in devices.items():
         if name == "iBBQ":
             return addr
 '''
