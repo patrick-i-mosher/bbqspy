@@ -73,7 +73,7 @@ Jumping in to the source code for an app that somebody else built can be an enli
 
 The source tree for this file contains the helpfully-named MyBbqBleService.java file, which it's safe to assume contains the code to interact with the thermometer's bluetooth low energy (BLE) adapter.  Opening this file presents a wall of helpful code, such as:
 
-`    
+```    
     public boolean J = true;  
     private final int K = 24;  
     private final int L = 23;  
@@ -81,7 +81,7 @@ The source tree for this file contains the helpfully-named MyBbqBleService.java 
     private final int N = 21;  
     private final int O = 20;  
     private int P = 30000;  
-`
+```
 
 Now these lousy variable names aren't because the developer was lazy; it's a result of the decompilation process.  One of the challenges of a reverse-engineering project is following the flow of control when symbols don't have meaningful names.  One thing I find helpful is to rename symbols as you figure out their purpose.  This is easy to do in Android Studio; just highlight the variable or function name, right-click, and select "rename," from the "refactor," menu.  This will update that symbol's name throughout the entire file.  Another helpful tip is to pay attention to context clues.  While the compilation process removes comments from the code, you can still gain a lot of information based on the strings that the decompiled code contains.  This project in particular makes extensive use of Androids logging API, and the strings associated with the call to the logging function provides a heap of useful information.
 
