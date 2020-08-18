@@ -22,7 +22,7 @@ Many Android devices are capable of saving full capture of their bluetooth adapt
 #### adb bugreport
 The `<adb bugreport [PATH]>` command (where [PATH] is the filesystem location to output the bug report) dumps a ton of useful forensic inforation about the currently connected Android device.  
 
-![adb bugreport](https://github.com/patrick-i-mosher/bbqspy/images/adb_bugreport_screencap.jpg)
+![adb bugreport](https://github.com/patrick-i-mosher/bbqspy/blob/master/images/adb_bugreport_screencap.jpg)
 
 Among the many artifacts created by `<adb bugreport>` is a snapshot of some portions of the device's filesystem.  These are stored in a folder called `<FS/>`.  Some simple investigation reveals that the `<btsnoop_hci.log>` file is stored at `<FS/data/log/bt/btsnoop_hci.log>`.
  
