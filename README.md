@@ -9,7 +9,7 @@ I've included an overview of the approach I took to reverse-engineering the ther
 ### Determine the Device's Address
 The first step in learning how to communicate with a particular bluetooth device is discovering it's adapter address.  There are a number of ways to do this; I used the nRF Connect app on Android to gather some basic information about the thermometer.  
 
-![nRF Connect](https://github.com/patrick-i-mosher/bbqspy/images/nRF_Connect.jpg)
+![nRF Connect](images/nRF_Connect.jpg)
 
 As you can see, nRF Connect provides not only the device's bluetooth adapter address but also some basic information about the device.  Connecting to the device via the nRF interface can provide more detailed information, including advertised services and characteristics.  
 
