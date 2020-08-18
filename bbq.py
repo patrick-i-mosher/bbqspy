@@ -1,21 +1,20 @@
 #!/usr/bin/python3
 
 from bluepy.btle import *
-import queue
 from threading import Thread
-import time
-
-results_q = queue.Queue()
+from datetime import datetime
+import queue
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 
 class MyDelegate(DefaultDelegate):
     def __init__(self):
         DefaultDelegate.__init__(self)
 
     def handleNotification(self, cHandle, data):
-        print("Got Notification for handle {}!".format(hex(cHandle)))
         if cHandle == 0x30:
             results = normalize_temps(data)
-            q.put(results)
+            results_q.put(results)
             '''
             i = 1
             for res in results:
@@ -36,7 +35,7 @@ def normalize_temps(temp_array):
         if f_temp == 11826.68:
             # No probe plugged in this slot
             continue
-        temps.append((f_temp, datetime.datetime.now().timestamp()))
+        temps.append((f_temp, datetime.now().timestamp()))
     return temps
 
 def receive_notifications(p):
@@ -59,17 +58,36 @@ def setup_ble_connection():
     send_write_request(p, service_uuid, 0xfff4, 0x0031, b'\x01\x00')
     # Tell device to start broadcasting temp notifications
     send_write_request(p, service_uuid, 0xfff5, 0x0034, b'\x0b\x01\x00\x00\x00\x00')
-    return p;
+    receive_notifications(p);
+
+def animate(i, xs, ys):
+    datapoints = results_q.get()
+    ys.append(datapoints[0][0])
+    xs.append(datapoints[1][1])
+    xs = xs[-100:]
+    ys = ys[-100:]
+    ax.clear()
+    ax.plot(xs, ys)
+    print("{}, {}".format(xs, ys))
+    plt.xticks(rotation=45, ha='right')
+    plt.subplots_adjust(bottom=0.30)
+    plt.title("iBBQ Temp over Time")
+    plt.ylabel("Temperature (deg F)")
+
+
+results_q = queue.Queue()
+fig = plt.figure()
+ax = fig.add_subplot(1,1,1)
 
 def main():
-    iBBQ = setup_ble_connection()
-    ble_notification_handler = Thread(target=receive_notifications,
-                                      args=(iBBQ))
-    ble_notification_handler.setDaemon(True)
-    ble_notification_handler.start()
-    '''
-    MATPLOTLIB animation stuff goes here
-    '''
+    # Start a new thread to communicate with the temperature probe
+    ble_notification_handler = Thread(target=setup_ble_connection,
+                                      daemon=True).start()
+    # Set up visualization
+    xs = []
+    ys = []
+    ani = animation.FuncAnimation(fig, animate, fargs=(xs, ys), interval=1000)
+    plt.show()
 
 if __name__ == '__main__':
     main()
