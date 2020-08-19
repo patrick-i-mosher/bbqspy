@@ -73,7 +73,7 @@ Jumping in to the source code for an app that somebody else built can be an enli
 
 The source tree for this file contains the helpfully-named MyBbqBleService.java file, which it's safe to assume contains the code to interact with the thermometer's bluetooth low energy (BLE) adapter.  Opening this file presents a wall of helpful code, such as:
 
-```    
+```java    
     public boolean J = true;  
     private final int K = 24;  
     private final int L = 23;  
@@ -87,9 +87,52 @@ Now these lousy variable names aren't because the developer was lazy; it's a res
 
 This file contains around 1,200 lines of code.  It can be hard to find a starting place, but fortunately we know what we are looking for: the code that handles temperature data received from the thermometer.  In Android, the BluetoothGattCallback abstract class is used to implement callbacks for relevant bluetooth low energy events, so this is probably a good place to start.
 
-Looking at this app's BluetoothGattCallback implementation, we find a very long `if...else if` block that performs different actions determined by the value of the data packet received.
+Looking at this app's BluetoothGattCallback implementation, we find a very long `if...else if` block that performs different actions determined by the value of the data packet received.  Towards the end of it is this block of code:
+```java
+else if (bluetoothGattCharacteristic.getUuid().equals(MyBbqBleService.this.F.getUuid())) {
+byte[] value3 = bluetoothGattCharacteristic.getValue();
+if (MyBbqBleService.this.J) {
+    MyBbqBleService.this.ad.putInt("PROBE_COUNT", value3.length / 2);
+    MyBbqBleService.this.ad.commit();
+    boolean unused8 = MyBbqBleService.this.J = false;
+    MyBbqBleService.this.sendBroadcast(new Intent("INTENT_GET_TEMP"));
+}
+for (int i2 = 0; i2 < value3.length; i2 += 2) {
+    short round = (short) ((int) Math.round(((double) MyBbqBleService.a(value3, i2)) / 10.0d));
+    Log.i(MyBbqBleService.this.f317a, "onCharacteristicChanged: t: " + round);
+    if (round < MyBbqBleService.this.v || round > MyBbqBleService.this.u) {
+        MyBbqBleService.this.a(MyBbqBleService.this.r[i2 / 2]);
+    } else {
+        MyBbqBleService.this.a(MyBbqBleService.this.q[i2 / 2], round);
+        MyBbqBleService.this.d.a((i2 / 2) + 1, round);
+    }
+}
 
+```
+The `INTENT_GET_TEMP` seems like a pretty strong clue that we're on the right track.  The following line offers some more clues: 
 
+```java
+short round = (short) ((int) Math.round(((double) MyBbqBleService.a(value3, i2)) / 10.0d));`
+```
+This line is in a loop that iterates over a `byte[]` (`value3` in the line above).  The line calls the function `MyBbqService.a()` with the `byte[] value3` and the loop's counter (`i2`) as arguments, divides the resulting value by 10, and rounds it to the nearest whole number.  Let's take a look at `MyBbqService.a()`.  To easily navigate to the correct function, highlight the function name in Android Studio, right-click, and select "Go To" -> "Declaration or Usages."  That takes us to this function:
+
+```java
+public static short a(byte[] bArr, int i2) {
+    if (bArr.length <= i2) {
+        return 0;
+    }
+    return (short) ((bArr[i2 + 1] << 8) | (bArr[i2 + 0] & 255));
+}
+```
+This looks like it might be the temperature decode operation we were looking for.  This line performs an 8-bit left shift on the value in index `i2 + 1`, performs a bitwise `AND` of the value in index `i2` and 255, and finally performs a logical `OR` of those two values.  Using the example data from our packet capture, where the first two bytes were 0x1801, we can perform the following operation:
+```
+0x01 << 0x08 = 0x100
+0x18 & 0xff = 0x10
+0x100 | 0x10 = 0x110
+0x110 / 0x0a = 0x11
+0x11 = 27
+```
+The final value we get is 0x11, or 27 in base 10.  Keeping in mind that this thermometer was manufactured outside of the United States and likely uses Celsius as the default temperature unit, we can conclude that the device is reporting that the first probe's temperature is 27 degrees Celsius.  Calculating that to Fahrenheit yields 80.6, which (rounded up) was the temperature displayed on the face of the thermometer at the time of the PCAP.
 
 
 
